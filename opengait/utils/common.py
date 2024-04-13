@@ -103,7 +103,8 @@ def ts2np(x):
 
 
 def ts2var(x, **kwargs):
-    return autograd.Variable(x, **kwargs).cuda()
+    # return autograd.Variable(x, **kwargs).cuda()
+    return autograd.Variable(x, **kwargs)
 
 
 def np2var(x, **kwargs):
@@ -194,7 +195,8 @@ def get_ddp_module(module, find_unused_parameters=False, **kwargs):
     if len(list(module.parameters())) == 0:
         # for the case that loss module has not parameters.
         return module
-    device = torch.cuda.current_device()
+    # device = torch.cuda.current_device()
+    device = torch.device('cpu')
     module = DDPPassthrough(module, device_ids=[device], output_device=device,
                             find_unused_parameters=find_unused_parameters, **kwargs)
     return module

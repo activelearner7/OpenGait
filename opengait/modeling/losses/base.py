@@ -14,11 +14,11 @@ def gather_and_scale_wrapper(func):
     def inner(*args, **kwds):
         try:
 
-            for k, v in kwds.items():
-                kwds[k] = ddp_all_gather(v)
+            # for k, v in kwds.items():
+                # kwds[k] = ddp_all_gather(v)
 
             loss, loss_info = func(*args, **kwds)
-            loss *= torch.distributed.get_world_size()
+            # loss *= torch.distributed.get_world_size()
             return loss, loss_info
         except:
             raise ArgumentError

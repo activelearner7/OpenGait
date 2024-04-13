@@ -46,17 +46,23 @@ class GaitSet(BaseModel):
         self.HPP = HorizontalPoolingPyramid(bin_num=model_cfg['bin_num'])
 
     def forward(self, inputs):
-        ipts, labs, _, _, seqL = inputs
+        ipts, labs, try1, try2, seqL = inputs
         sils = ipts[0]  # [n, s, h, w]
+        # print("ipts size:", ipts.size())
+        print("sils size:", sils.size())
+        # ipts_size = ipts.size()
+        sils_size = sils.size()
         if len(sils.size()) == 4:
             sils = sils.unsqueeze(1)
 
         del ipts
         outs = self.set_block1(sils)
+        print("outs",outs.size())
         gl = self.set_pooling(outs, seqL, options={"dim": 2})[0]
         gl = self.gl_block2(gl)
 
         outs = self.set_block2(outs)
+        print("outs",outs.size())
         gl = gl + self.set_pooling(outs, seqL, options={"dim": 2})[0]
         gl = self.gl_block3(gl)
 

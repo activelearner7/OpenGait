@@ -38,6 +38,7 @@ class SetBlockWrapper(nn.Module):
         self.forward_block = forward_block
 
     def forward(self, x, *args, **kwargs):
+        # Doubt, what is s ?
         """
             In  x: [n, c_in, s, h_in, w_in]
             Out x: [n, c_out, s, h_out, w_out]

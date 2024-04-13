@@ -1,0 +1,47 @@
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Python Debugger: Current File with Arguments",
+//             "type": "debugpy",
+//             "request": "launch",
+//             "program": "${file}",
+//             "console": "integratedTerminal",
+//             "args": "${command:pickArgs}"
+//         }
+//     ]
+// }
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug PyTorch Distributed Training",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/opengait/main.py",
+            "args": [
+                "--cfgs",
+                "configs/gaitset/gaitset.yaml",
+                "--phase",
+                "train"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0,1"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}",
+            "python": "/opt/homebrew/bin/python3",  // Update with the path to your virtual environment's python interpreter
+            "stopOnEntry": false,
+            "debugOptions": [
+                "RedirectOutput"
+            ],
+            "externalConsole": false,
+            "preLaunchTask": null
+        }
+    ]
+}

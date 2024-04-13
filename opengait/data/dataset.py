@@ -82,24 +82,24 @@ class DataSet(tordata.Dataset):
         test_set = [label for label in test_set if label in label_list]
         miss_pids = [label for label in label_list if label not in (
             train_set + test_set)]
-        msg_mgr = get_msg_mgr()
+        # msg_mgr = get_msg_mgr()
 
-        def log_pid_list(pid_list):
-            if len(pid_list) >= 3:
-                msg_mgr.log_info('[%s, %s, ..., %s]' %
-                                 (pid_list[0], pid_list[1], pid_list[-1]))
-            else:
-                msg_mgr.log_info(pid_list)
+        # def log_pid_list(pid_list):
+        #     if len(pid_list) >= 3:
+        #         msg_mgr.log_info('[%s, %s, ..., %s]' %
+        #                          (pid_list[0], pid_list[1], pid_list[-1]))
+        #     else:
+        #         msg_mgr.log_info(pid_list)
 
-        if len(miss_pids) > 0:
-            msg_mgr.log_debug('-------- Miss Pid List --------')
-            msg_mgr.log_debug(miss_pids)
-        if training:
-            msg_mgr.log_info("-------- Train Pid List --------")
-            log_pid_list(train_set)
-        else:
-            msg_mgr.log_info("-------- Test Pid List --------")
-            log_pid_list(test_set)
+        # if len(miss_pids) > 0:
+        #     msg_mgr.log_debug('-------- Miss Pid List --------')
+        #     msg_mgr.log_debug(miss_pids)
+        # if training:
+        #     msg_mgr.log_info("-------- Train Pid List --------")
+        #     log_pid_list(train_set)
+        # else:
+        #     msg_mgr.log_info("-------- Test Pid List --------")
+        #     log_pid_list(test_set)
 
         def get_seqs_info_list(label_set):
             seqs_info_list = []

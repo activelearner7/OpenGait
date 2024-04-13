@@ -130,7 +130,7 @@ class BaseModel(MetaModel, nn.Module):
         """
 
         super(BaseModel, self).__init__()
-        self.msg_mgr = get_msg_mgr()
+        # self.msg_mgr = get_msg_mgr()
         self.cfgs = cfgs
         self.iteration = 0
         self.engine_cfg = cfgs['trainer_cfg'] if training else cfgs['evaluator_cfg']
@@ -146,7 +146,7 @@ class BaseModel(MetaModel, nn.Module):
         self.init_parameters()
         self.trainer_trfs = get_transform(cfgs['trainer_cfg']['transform'])
 
-        self.msg_mgr.log_info(cfgs['data_cfg'])
+        # self.msg_mgr.log_info(cfgs['data_cfg'])
         if training:
             self.train_loader = self.get_loader(
                 cfgs['data_cfg'], train=True)
@@ -156,10 +156,10 @@ class BaseModel(MetaModel, nn.Module):
             self.evaluator_trfs = get_transform(
                 cfgs['evaluator_cfg']['transform'])
 
-        self.device = torch.distributed.get_rank()
-        torch.cuda.set_device(self.device)
-        self.to(device=torch.device(
-            "cuda", self.device))
+        # self.device = torch.distributed.get_rank()
+        # torch.cuda.set_device(self.device)
+        # self.to(device=torch.device(
+        #     "cuda", self.device))
 
         if training:
             self.loss_aggregator = LossAggregator(cfgs['loss_cfg'])
@@ -219,7 +219,7 @@ class BaseModel(MetaModel, nn.Module):
         return loader
 
     def get_optimizer(self, optimizer_cfg):
-        self.msg_mgr.log_info(optimizer_cfg)
+        # self.msg_mgr.log_info(optimizer_cfg)
         optimizer = get_attr_from([optim], optimizer_cfg['solver'])
         valid_arg = get_valid_args(optimizer, optimizer_cfg, ['solver'])
         optimizer = optimizer(
@@ -227,7 +227,7 @@ class BaseModel(MetaModel, nn.Module):
         return optimizer
 
     def get_scheduler(self, scheduler_cfg):
-        self.msg_mgr.log_info(scheduler_cfg)
+        # self.msg_mgr.log_info(scheduler_cfg)
         Scheduler = get_attr_from(
             [optim.lr_scheduler], scheduler_cfg['scheduler'])
         valid_arg = get_valid_args(Scheduler, scheduler_cfg, ['scheduler'])
@@ -416,22 +416,22 @@ class BaseModel(MetaModel, nn.Module):
             visual_summary.update(loss_info)
             visual_summary['scalar/learning_rate'] = model.optimizer.param_groups[0]['lr']
 
-            model.msg_mgr.train_step(loss_info, visual_summary)
+            # model.msg_mgr.train_step(loss_info, visual_summary)
             if model.iteration % model.engine_cfg['save_iter'] == 0:
                 # save the checkpoint
                 model.save_ckpt(model.iteration)
 
                 # run test if with_test = true
                 if model.engine_cfg['with_test']:
-                    model.msg_mgr.log_info("Running test...")
+                    # model.msg_mgr.log_info("Running test...")
                     model.eval()
                     result_dict = BaseModel.run_test(model)
                     model.train()
                     if model.cfgs['trainer_cfg']['fix_BN']:
                         model.fix_BN()
-                    if result_dict:
-                        model.msg_mgr.write_to_tensorboard(result_dict)
-                    model.msg_mgr.reset_time()
+                    # if result_dict:
+                    #     # model.msg_mgr.write_to_tensorboard(result_dict)
+                    # model.msg_mgr.reset_time()
             if model.iteration >= model.engine_cfg['total_iter']:
                 break
 
