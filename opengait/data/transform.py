@@ -53,8 +53,8 @@ class BaseSilCuttingTransform():
             cutting = self.cutting
         else:
             cutting = int(x.shape[-1] // 64) * 10
-        if cutting != 0: 
-            x = x[..., cutting:-cutting]
+        # if cutting != 0: 
+        #     x = x[..., cutting:-cutting]
         return x / self.divsor
 
 

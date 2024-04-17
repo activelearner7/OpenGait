@@ -38,7 +38,7 @@ class SetBlockWrapper(nn.Module):
         self.forward_block = forward_block
 
     def forward(self, x, *args, **kwargs):
-        # Doubt, what is s ?
+        # Doubt, what is s ? s = No. of Frames
         """
             In  x: [n, c_in, s, h_in, w_in]
             Out x: [n, c_out, s, h_out, w_out]
@@ -48,6 +48,23 @@ class SetBlockWrapper(nn.Module):
             1, 2).reshape(-1, c, h, w), *args, **kwargs)
         output_size = x.size()
         return x.reshape(n, s, *output_size[1:]).transpose(1, 2).contiguous()
+    
+# Defined by Pratham Gupta
+class SetBlockWrapper3D(nn.Module):
+    def __init__(self, forward_block):
+        super(SetBlockWrapper3D, self).__init__()
+        self.forward_block = forward_block
+
+    def forward(self, x, *args, **kwargs):
+        # Doubt, what is s ? No. of Frames
+        """
+            In  x: [n, c_in, s, h_in, w_in]
+            Out x: [n, c_out, s, h_out, w_out]
+        """
+        n, c, s, h, w = x.size()
+        x = self.forward_block(x.reshape(-1, c, s, h, w), *args, **kwargs)
+        output_size = x.size()
+        return x.contiguous()
 
 
 class PackSequenceWrapper(nn.Module):

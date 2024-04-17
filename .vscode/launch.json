@@ -25,7 +25,7 @@
             "program": "${workspaceFolder}/opengait/main.py",
             "args": [
                 "--cfgs",
-                "configs/gaitset/gaitset.yaml",
+                "configs/odenet/odenet.yaml",
                 "--phase",
                 "train"
             ],

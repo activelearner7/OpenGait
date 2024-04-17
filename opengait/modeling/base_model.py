@@ -310,6 +310,7 @@ class BaseModel(MetaModel, nn.Module):
         seqs = [np2var(np.asarray([trf(fra) for fra in seq]), requires_grad=requires_grad).float()
                 for trf, seq in zip(seq_trfs, seqs_batch)]
 
+        print(seqs[0].size())
         typs = typs_batch
         vies = vies_batch
 
@@ -325,6 +326,7 @@ class BaseModel(MetaModel, nn.Module):
         else:
             ipts = seqs
         del seqs
+        print(ipts[0].size())
         return ipts, labs, typs, vies, seqL
 
     def train_step(self, loss_sum) -> bool:

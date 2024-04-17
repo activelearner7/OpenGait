@@ -3,8 +3,12 @@ import copy
 import torch.nn as nn
 
 from ..base_model import BaseModel
-from ..modules import SeparateFCs, BasicConv2d, SetBlockWrapper, HorizontalPoolingPyramid, PackSequenceWrapper
+from ..modules import SeparateFCs, BasicConv2d, SetBlockWrapper, SetBlockWrapper3D, HorizontalPoolingPyramid, PackSequenceWrapper
 
+def max_mean_pooling(x, dim):
+    max_values, _ = torch.max(x, dim=dim)
+    mean_values = torch.mean(x, dim=dim)
+    return max_values + mean_values
 
 class OdeNet(BaseModel):
 
@@ -29,14 +33,13 @@ class OdeNet(BaseModel):
                                         nn.MaxPool2d(kernel_size=2, stride=2))
         
         self.set_block4 = nn.Sequential(nn.Conv2d(in_c[3], in_c[4], kernel_size=1,
-                                                    stride=1, padding=1),
+                                                    stride=1, padding=0),
                                         nn.BatchNorm2d(in_c[4]),
-                                        nn.ReLU(inplace=True),
-                                        nn.MaxPool2d(kernel_size=2, stride=2))
+                                        nn.ReLU(inplace=True))
 
         self.set_block5 = nn.Sequential(nn.Conv3d(in_c[4], in_c[5], kernel_size=3,
-                                                  stride=1, padding=1),
-                                                  nn.BatchNorm2d(in_c[5]),
+                                                  stride=(3,1,1), padding=1),
+                                                  nn.BatchNorm3d(in_c[5]),
                                                   nn.ReLU(inplace=True))
 
 
@@ -44,9 +47,9 @@ class OdeNet(BaseModel):
         self.set_block2 = SetBlockWrapper(self.set_block2)
         self.set_block3 = SetBlockWrapper(self.set_block3)
         self.set_block4 = SetBlockWrapper(self.set_block4)
-        self.set_block5 = SetBlockWrapper(self.set_block5)
+        self.set_block5 = SetBlockWrapper3D(self.set_block5)
 
-        # self.set_pooling = PackSequenceWrapper(torch.max)
+        self.set_pooling = PackSequenceWrapper(torch.max)
 
         # self.Head = SeparateFCs(**model_cfg['SeparateFCs'])
 
@@ -59,17 +62,27 @@ class OdeNet(BaseModel):
             sils = sils.unsqueeze(1)
 
         del ipts
+        print("sils size:", sils.size())
         outs = self.set_block1(sils)
-        gl = self.set_pooling(outs, seqL, options={"dim": 2})[0]
-        gl = self.gl_block2(gl)
-
+        print("outs",outs.size())
         outs = self.set_block2(outs)
-        gl = gl + self.set_pooling(outs, seqL, options={"dim": 2})[0]
-        gl = self.gl_block3(gl)
-
+        print("outs",outs.size())
         outs = self.set_block3(outs)
+        print("outs",outs.size())
+        outs = self.set_block4(outs)
+        print("outs",outs.size())
+
+        # 3D convolution, for temporal learning
+        outs = self.set_block5(outs)
+        print("outs",outs.size())
+
+        # Remove the T dimension
         outs = self.set_pooling(outs, seqL, options={"dim": 2})[0]
-        gl = gl + outs
+        print("outs",outs.size())
+
+        # flatten the last 2 dimension
+        outs = torch.reshape(outs, (outs.size(0), outs.size(1), -1))
+        print("outs",outs.size())
 
         # Horizontal Pooling Matching, HPM
         feature1 = self.HPP(outs)  # [n, c, p]
