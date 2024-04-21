@@ -235,16 +235,16 @@ class BaseModel(MetaModel, nn.Module):
         return scheduler
 
     def save_ckpt(self, iteration):
-        if torch.distributed.get_rank() == 0:
-            mkdir(osp.join(self.save_path, "checkpoints/"))
-            save_name = self.engine_cfg['save_name']
-            checkpoint = {
-                'model': self.state_dict(),
-                'optimizer': self.optimizer.state_dict(),
-                'scheduler': self.scheduler.state_dict(),
-                'iteration': iteration}
-            torch.save(checkpoint,
-                       osp.join(self.save_path, 'checkpoints/{}-{:0>5}.pt'.format(save_name, iteration)))
+        # if torch.distributed.get_rank() == 0:
+        mkdir(osp.join(self.save_path, "checkpoints/"))
+        save_name = self.engine_cfg['save_name']
+        checkpoint = {
+            'model': self.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'scheduler': self.scheduler.state_dict(),
+            'iteration': iteration}
+        torch.save(checkpoint,
+                    osp.join(self.save_path, 'checkpoints/{}-{:0>5}.pt'.format(save_name, iteration)))
 
     def _load_ckpt(self, save_name):
         load_ckpt_strict = self.engine_cfg['restore_ckpt_strict']
@@ -380,6 +380,7 @@ class BaseModel(MetaModel, nn.Module):
         info_dict = Odict()
         for inputs in self.test_loader:
             ipts = self.inputs_pretreament(inputs)
+            # print(ipts.size())
             with autocast(enabled=self.engine_cfg['enable_float16']):
                 retval = self.forward(ipts)
                 inference_feat = retval['inference_feat']
@@ -441,10 +442,11 @@ class BaseModel(MetaModel, nn.Module):
     def run_test(model):
         """Accept the instance object(model) here, and then run the test loop."""
         evaluator_cfg = model.cfgs['evaluator_cfg']
-        if torch.distributed.get_world_size() != evaluator_cfg['sampler']['batch_size']:
-            raise ValueError("The batch size ({}) must be equal to the number of GPUs ({}) in testing mode!".format(
-                evaluator_cfg['sampler']['batch_size'], torch.distributed.get_world_size()))
-        rank = torch.distributed.get_rank()
+        # if torch.distributed.get_world_size() != evaluator_cfg['sampler']['batch_size']:
+        #     raise ValueError("The batch size ({}) must be equal to the number of GPUs ({}) in testing mode!".format(
+        #         evaluator_cfg['sampler']['batch_size'], torch.distributed.get_world_size()))
+        # rank = torch.distributed.get_rank()
+        rank = 0
         with torch.no_grad():
             info_dict = model.inference(rank)
         if rank == 0:

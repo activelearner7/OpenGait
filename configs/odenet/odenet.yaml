@@ -17,10 +17,15 @@ evaluator_cfg:
   metric: euc # cos
 
 loss_cfg:
-  loss_term_weight: 1.0
-  margin: 0.2
-  type: TripletLoss
-  log_prefix: triplet
+  - loss_term_weight: 1.0
+    margin: 0.2
+    type: TripletLoss
+    log_prefix: triplet
+  - loss_term_weight: 1.0
+    scale: 16
+    type: CrossEntropyLoss
+    log_prefix: softmax
+    log_accuracy: true
 
 model_cfg:
   model: OdeNet
@@ -31,10 +36,22 @@ model_cfg:
     - 64
     - 1
     - 64
-  SeparateFCs:
-    in_channels: 128
+  SeparateFC1:
+    in_channels: 64
     out_channels: 256
-    parts_num: 62
+    parts_num: 64
+  SeparateFC2:
+    in_channels: 256
+    out_channels: 128
+    parts_num: 64
+  SeparateFC3:
+    in_channels: 64
+    out_channels: 256
+    parts_num: 64
+  SeparateFC4:
+    in_channels: 256
+    out_channels: 74
+    parts_num: 64
   bin_num:
     - 16
     - 8
@@ -58,14 +75,14 @@ scheduler_cfg:
 
 trainer_cfg:
   enable_float16: true
-  log_iter: 100
+  log_iter: 5
   with_test: true
   restore_ckpt_strict: true
   restore_hint: 0
-  save_iter: 10000
+  save_iter: 10
   save_name: GaitSet
   sync_BN: false
-  total_iter: 40000
+  total_iter: 20
   sampler:
     batch_shuffle: false
     batch_size:

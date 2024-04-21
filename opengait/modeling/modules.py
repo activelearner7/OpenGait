@@ -77,6 +77,8 @@ class PackSequenceWrapper(nn.Module):
             In  seqs: [n, c, s, ...]
             Out rets: [n, ...]
         """
+
+        return self.pooling_func(seqs, **options)
         if seqL is None:
             return self.pooling_func(seqs, **options)
         seqL = seqL[0].data.cpu().numpy().tolist()

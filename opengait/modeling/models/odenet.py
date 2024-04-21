@@ -51,6 +51,10 @@ class OdeNet(BaseModel):
 
         self.set_pooling = PackSequenceWrapper(torch.max)
 
+        self.fc1 = SeparateFCs(**model_cfg['SeparateFC1'])
+        self.fc2 = SeparateFCs(**model_cfg['SeparateFC2'])
+        self.fc3 = SeparateFCs(**model_cfg['SeparateFC3'])
+        self.fc4 = SeparateFCs(**model_cfg['SeparateFC4'])
         # self.Head = SeparateFCs(**model_cfg['SeparateFCs'])
 
         # self.HPP = HorizontalPoolingPyramid(bin_num=model_cfg['bin_num'])
@@ -58,6 +62,7 @@ class OdeNet(BaseModel):
     def forward(self, inputs):
         ipts, labs, positionalLabels, videoLabels, seqL = inputs
         sils = ipts[0]  # [n, s, h, w]
+        print(sils.size())
         if len(sils.size()) == 4:
             sils = sils.unsqueeze(1)
 
@@ -84,22 +89,39 @@ class OdeNet(BaseModel):
         outs = torch.reshape(outs, (outs.size(0), outs.size(1), -1))
         print("outs",outs.size())
 
+        # Fully Connected for Triplet Loss
+        # Layer1
+        feature1 = self.fc1(outs)
+        print("outs",feature1.size())
+        # Layer2
+        embs_triloss = self.fc2(feature1)
+        print("embs_triloss",embs_triloss.size())
+
+        # Fully Connected for Cross Entropy
+        # Layer1
+        feature2 = self.fc3(outs)
+        print("outs",feature2.size())
+        # Layer2
+        embs_ce = self.fc4(feature2)
+        print("embs_ce",embs_ce.size())
+
         # Horizontal Pooling Matching, HPM
-        feature1 = self.HPP(outs)  # [n, c, p]
-        feature2 = self.HPP(gl)  # [n, c, p]
-        feature = torch.cat([feature1, feature2], -1)  # [n, c, p]
-        embs = self.Head(feature)
+        # feature1 = self.HPP(outs)  # [n, c, p]
+        # feature2 = self.HPP(gl)  # [n, c, p]
+        # feature = torch.cat([feature1, feature2], -1)  # [n, c, p]
+        # embs = self.Head(feature)
 
         n, _, s, h, w = sils.size()
         retval = {
             'training_feat': {
-                'triplet': {'embeddings': embs, 'labels': labs}
+                'triplet': {'embeddings': embs_triloss, 'labels': labs},
+                'softmax': {'logits': embs_ce, 'labels': labs}
             },
             'visual_summary': {
                 'image/sils': sils.view(n*s, 1, h, w)
             },
             'inference_feat': {
-                'embeddings': embs
+                'embeddings': embs_ce
             }
         }
         return retval
