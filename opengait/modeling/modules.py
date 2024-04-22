@@ -78,7 +78,7 @@ class PackSequenceWrapper(nn.Module):
             Out rets: [n, ...]
         """
 
-        return self.pooling_func(seqs, **options)
+        # return self.pooling_func(seqs, **options)
         if seqL is None:
             return self.pooling_func(seqs, **options)
         seqL = seqL[0].data.cpu().numpy().tolist()
@@ -86,7 +86,7 @@ class PackSequenceWrapper(nn.Module):
 
         rets = []
         for curr_start, curr_seqL in zip(start, seqL):
-            narrowed_seq = seqs.narrow(dim, curr_start, curr_seqL)
+            narrowed_seq = seqs.narrow(dim, curr_start, (curr_seqL+2)//3)
             rets.append(self.pooling_func(narrowed_seq, **options))
         if len(rets) > 0 and is_list_or_tuple(rets[0]):
             return [torch.cat([ret[j] for ret in rets])

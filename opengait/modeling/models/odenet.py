@@ -121,7 +121,7 @@ class OdeNet(BaseModel):
                 'image/sils': sils.view(n*s, 1, h, w)
             },
             'inference_feat': {
-                'embeddings': embs_ce
+                'embeddings': embs_triloss
             }
         }
         return retval
