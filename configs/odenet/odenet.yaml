@@ -36,6 +36,11 @@ model_cfg:
     - 64
     - 1
     - 64
+    - 128
+    - 64
+    - 32
+    - 16
+    - 1
   SeparateFC1:
     in_channels: 64
     out_channels: 256
