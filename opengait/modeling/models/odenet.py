@@ -159,12 +159,12 @@ class OdeNet(BaseModel):
         # self.set_block4 = SetBlockWrapper(self.set_block4)
         # self.set_block5 = SetBlockWrapper3D(self.set_block5)
 
-        # self.set_pooling = PackSequenceWrapper(torch.max)
+        self.set_pooling = PackSequenceWrapper(torch.max)
 
-        # self.fc1 = SeparateFCs(**model_cfg['SeparateFC1'])
-        # self.fc2 = SeparateFCs(**model_cfg['SeparateFC2'])
-        # self.fc3 = SeparateFCs(**model_cfg['SeparateFC3'])
-        # self.fc4 = SeparateFCs(**model_cfg['SeparateFC4'])
+        self.fc1 = SeparateFCs(**model_cfg['SeparateFC1'])
+        self.fc2 = SeparateFCs(**model_cfg['SeparateFC2'])
+        self.fc3 = SeparateFCs(**model_cfg['SeparateFC3'])
+        self.fc4 = SeparateFCs(**model_cfg['SeparateFC4'])
        
 
     def forward(self, inputs):
@@ -175,8 +175,22 @@ class OdeNet(BaseModel):
             sils = sils.unsqueeze(1)
         del ipts
 
-        first_frames = sils[:, :, 0, :, :]
-        print(first_frames.shape)
+        # first_frames = sils[:, :, 0, :, :]
+        # print("First Frames",first_frames.shape)
+        # first_frames = first_frames.squeeze(1)  # Shape: (128, 64, 64)
+        # # Repeat the first frame 30 times along a new dimension
+        # repeated_frames = first_frames.unsqueeze(2).repeat(1, 1, 30, 1, 1)  # Shape: (128, 1, 30, 64, 64)
+
+        # # Verify the shape
+        # print("Repeated Frames",repeated_frames.shape)  # Should output: torch.Size([128, 1, 30, 64, 64])
+
+        first_frames = sils[:, :, 0, :, :]  # Shape: (128, 1, 64, 64)
+
+        # Repeat the first frame 30 times along a new dimension
+        repeated_frames = first_frames.unsqueeze(2).repeat(1, 1, 30, 1, 1)  # Shape: (128, 1, 30, 64, 64)
+
+        # Verify the shape
+        print(repeated_frames.shape)  # Should output: torch.Size([128, 1, 30, 64, 64])
 
         x1 = self.block1(sils)
         print("x1",x1.shape)
@@ -231,12 +245,12 @@ class OdeNet(BaseModel):
 
         # Remove the T dimension
         outs = self.set_pooling(x5, seqL, options={"dim": 2})[0]
-        print("outs", outs.shape())
+        print("outs", outs.shape)
         # 128 x 64 x 8 x 8
 
         # flatten the last 2 dimension
         outs = torch.reshape(outs, (outs.size(0), outs.size(1), -1))
-        print("outs", outs.shape())
+        print("outs", outs.shape)
         # 128 x 64 x 64
 
 
@@ -260,7 +274,8 @@ class OdeNet(BaseModel):
         retval = {
             'training_feat': {
                 'triplet': {'embeddings': embs_triloss, 'labels': labs},
-                'softmax': {'logits': embs_ce, 'labels': labs}
+                'softmax': {'logits': embs_ce, 'labels': labs},
+                'recons': {'ypred': d1, 'ytrue': repeated_frames}
             },
             'visual_summary': {
                 'image/sils': sils.view(n*s, 1, h, w)

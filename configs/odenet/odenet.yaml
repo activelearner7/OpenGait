@@ -26,6 +26,9 @@ loss_cfg:
     type: CrossEntropyLoss
     log_prefix: softmax
     log_accuracy: true
+  - loss_term_weight: 1.0
+    type: ReconsLoss
+    log_prefix: recons
 
 model_cfg:
   model: OdeNet
